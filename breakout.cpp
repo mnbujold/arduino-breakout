@@ -9,6 +9,7 @@
 #define TFT_RST 8 // Reset line for TFT
 
 /* GLOBAL VARS */
+Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
 
 // Joystick Pins
 const int VERT = 0;
