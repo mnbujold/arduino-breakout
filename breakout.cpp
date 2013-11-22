@@ -17,9 +17,14 @@ const int SEL = 9;
 
 
 void setup(){
-
   // Start serial communication for debugging
   Serial.begin(9600);
+  
+  tft.initR(INITR_REDTAB);
+  pinMode(SEL, INPUT);
+  digitalWrite(SEL, HIGH);
+
+  tft.fillScreen(ST7735_BLACK);
 
 }
 

@@ -17,9 +17,8 @@ BOARD_TAG = mega2560
 # Identify and of the extra libraries that are not in the core collection
 # here.  If you don't have any, leave it undefined.
 # For example:
-#	ARDUINO_LIBS = SPI Adafruit_GFX Adafruit_ST7735 \
-#	   Adafruit_SD Adafruit_SD/utility SD/utility UAUtils
-ARDUINO_LIBS = UAUtils
+	ARDUINO_LIBS = SPI Adafruit_GFX Adafruit_ST7735 \
+	   Adafruit_SD Adafruit_SD/utility SD/utility UAUtils
 
 # if there is a ARDUINO_UA_ROOT environment variable, it defines the
 # root of the arduino_ua install.  If not, we assume it is $(HOME)
