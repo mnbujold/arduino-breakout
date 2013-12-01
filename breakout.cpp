@@ -25,12 +25,13 @@ int X_CENTRE;
 
 const int speakerPin = 11;
 
-
-
+// Ball-Specific Variables
+const int BALL_RADIUS = 3;
 Point ball, oldball;
 int xdir, ydir;
 int paddlepos;
 
+int totalScore = 0;
 
 void playTone(int period, int duration){
   long elapsedTime = 0;
@@ -58,12 +59,15 @@ void drawPaddle(int position, int oldpos){
 
 void drawBall(Point p, Point old){
 
-  tft.fillCircle(old.y, old.x, 3, ST7735_BLACK);
-  tft.fillCircle(p.y, p.x, 3, ST7735_WHITE);
+  tft.fillCircle(old.y, old.x, BALL_RADIUS, ST7735_BLACK);
+  tft.fillCircle(p.y, p.x, BALL_RADIUS, ST7735_WHITE);
 }
 
 void checkBallPos(){
-
+  /* 
+    This function does boundary checking on the ball, also determines where
+    it hits the paddle, and changes the behavior of the ball depending.
+  */
   if(ball.x > SCREEN_WIDTH){
     ball.x = SCREEN_WIDTH;
     xdir = -1;
@@ -85,10 +89,19 @@ void checkBallPos(){
     return;
   }
 
+  if(ball.y < 19 && (ball.x <= paddlepos+(PADDLE_WIDTH/2)+3 && ball.x >= paddlepos+(PADDLE_WIDTH/2)-3)){
+    ball.y = 19;
+    ydir = 1;
+    xdir = 0;
+    totalScore++;
+    playTone(500,50);
+    return;
+  }
 
   if(ball.y < 19 && (ball.x >= paddlepos && ball.x <= paddlepos+PADDLE_WIDTH)){
     ball.y = 19;
     ydir = 1;
+    totalScore++;
     playTone(500, 50);
     return;
   }
@@ -96,7 +109,7 @@ void checkBallPos(){
   if(ball.y < 10 && (ball.x < paddlepos || ball.x > paddlepos+PADDLE_WIDTH)) {
     playTone(500,500);
     ball.y = SCREEN_HEIGHT/2;
-    ball.x = SCREEN_WIDTH/2;
+    ball.x = paddlepos;
     ydir = 1;
     xdir = 1;
   }
@@ -121,6 +134,21 @@ int readJoystick(int position){
   }
 
   return(position);
+}
+
+void displayInfo(int score){
+  // Testing out score display...
+  tft.setRotation(1);
+  tft.setTextColor(ST7735_WHITE);
+  tft.setTextSize(1);
+  tft.fillRect(0,120,50,4,ST7735_BLACK);
+  tft.setCursor(0,120);
+  tft.print("Score: ");
+  tft.print(score);
+  tft.setCursor(140,120);
+  tft.print("ooo");
+
+  tft.setRotation(0);
 }
 
 void setup(){
@@ -150,9 +178,14 @@ void setup(){
   drawPaddle(position, 0);
   drawBricks(NULL);
   drawBall(ball, oldball);
+  
+
+  int speed = 1;
+  displayInfo(totalScore);
 
   // Main program loop
   while(1){
+    
     paddlepos = position;
 
     oldpos = position;
@@ -161,6 +194,7 @@ void setup(){
       updateFlag = !updateFlag;
     if(updateFlag){
       drawPaddle(position, oldpos);
+      displayInfo(totalScore);
       updateFlag = false;
     }
 
@@ -168,8 +202,8 @@ void setup(){
     oldball.y = ball.y;
     checkBallPos();
     // Separate fcn: check if ball has hit a brick here...
-    ball.x += xdir;
-    ball.y += ydir;
+    ball.x += xdir*speed;
+    ball.y += ydir*speed;
     drawBall(ball, oldball);
 
     delay(20);
