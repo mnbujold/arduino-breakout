@@ -8,6 +8,9 @@
 #define TFT_DC 7  // Data/command line for TFT
 #define TFT_RST 8 // Reset line for TFT
 
+#define SCREEN_HEIGHT tft.width()
+#define SCREEN_WIDTH tft.height()
+
 /* GLOBAL VARS */
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
 
@@ -42,10 +45,15 @@ int readJoystick(int position){
   if(joystick_x > X_CENTRE + OFFSET){
     /* Move to the RIGHT by INCREMENT */
     position += INCREMENT;
+    if(position+PADDLE_WIDTH >= SCREEN_WIDTH)
+      position = SCREEN_WIDTH - PADDLE_WIDTH;
   }
+
   else if(joystick_x < X_CENTRE - OFFSET){
     /* Move to the LEFT by INCREMENT */
     position -= INCREMENT;
+    if(position <= 0)
+      position = 0;
   }
 
   return(position);
@@ -58,11 +66,12 @@ void setup(){
   X_CENTRE = analogRead(HOR);
   
   tft.initR(INITR_REDTAB);
+
   pinMode(SEL, INPUT);
   digitalWrite(SEL, HIGH);
 
   tft.fillScreen(ST7735_BLACK);
-  int position = tft.height()/2;
+  int position = SCREEN_WIDTH/2;
   int oldpos;
 
   while(1){
