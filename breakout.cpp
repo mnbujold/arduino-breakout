@@ -33,6 +33,9 @@ typedef struct Point {
   int y;
 } Point;
 
+Point ball, oldball;
+int xdir, ydir;
+int paddlepos;
 
 void drawPaddle(int position, int oldpos){
   /* Draws the paddle at the bottom of the screen */
@@ -45,30 +48,32 @@ void drawPaddle(int position, int oldpos){
 }
 
 void drawBall(Point p, Point old){
-  tft.fillCircle(p.x, p.y, 3, ST7735_WHITE);
-  tft.fillCircle(old.x, old.y, 3, ST7735_BLACK);
 
+  tft.fillCircle(old.y, old.x, 3, ST7735_BLACK);
+  tft.fillCircle(p.y, p.x, 3, ST7735_WHITE);
 }
 
-Point checkBallPos(Point p){
-  
-  Point r;
+void checkBallPos(){
 
-  if(p.x > SCREEN_WIDTH){
-    r.x = SCREEN_WIDTH;
+  if(ball.x > SCREEN_WIDTH){
+    ball.x = SCREEN_WIDTH;
+    xdir = -1;
   }
-  if(p.x < 0){
-    r.x = 0;
-  }
-
-  if(p.y > SCREEN_HEIGHT){
-    r.y = SCREEN_HEIGHT;
-  }
-  if(p.y < 0){
-    r.y = 0;
+  if(ball.x < 0){
+    ball.x = 0;
+    xdir = 1;
   }
 
-  return r;
+  if(ball.y > SCREEN_HEIGHT){
+    ball.y = SCREEN_HEIGHT;
+    ydir = -1;
+  }
+
+
+  if(ball.y < 19 ){
+    ball.y = 19;
+    ydir = 1;
+  }
 
 }
 
@@ -106,12 +111,13 @@ void setup(){
   int position = SCREEN_WIDTH/2;
   int oldpos;
 
-  Point ball;
   ball.x = SCREEN_WIDTH/2;
   ball.y = SCREEN_HEIGHT/2;
-  Point oldball;
   oldball.x = 0;
   oldball.y = 0;
+
+  xdir = 1;
+  ydir = 1;
 
   bool updateFlag = false;
   drawPaddle(position, 0);
@@ -121,6 +127,8 @@ void setup(){
 
   // Main program loop
   while(1){
+    paddlepos = position;
+
     oldpos = position;
     position = readJoystick(position);
     if(position != oldpos)
@@ -132,9 +140,9 @@ void setup(){
 
     oldball.x = ball.x;
     oldball.y = ball.y;
-    ball.x += 1;
-    ball.y += 1;
-    ball = checkBallPos(ball);
+    checkBallPos();
+    ball.x += xdir;
+    ball.y += ydir;
     drawBall(ball, oldball);
 
     delay(20);
