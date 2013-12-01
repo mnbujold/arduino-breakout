@@ -167,7 +167,7 @@ void setup(){
     oldball.x = ball.x;
     oldball.y = ball.y;
     checkBallPos();
-    // Separate fcn: check if ball has hit a brick here...
+    
     ball.x += xdir;
     ball.y += ydir;
     drawBall(ball, oldball);
