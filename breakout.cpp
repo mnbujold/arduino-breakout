@@ -3,15 +3,11 @@
 #include <Adafruit_ST7735.h>
 #include <SPI.h>
 
-/* PRE-PROCESSOR DIRECIVES */
-#define TFT_CS 6  // CS line for TFT display
-#define TFT_DC 7  // Data/command line for TFT
-#define TFT_RST 8 // Reset line for TFT
+#include "breakout.h"
+#include "bricks.h"
 
-#define SCREEN_HEIGHT tft.width()
-#define SCREEN_WIDTH tft.height()
-
-/* GLOBAL VARS */
+/* GLOBAL VARIABLES */
+// tft display
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
 
 // Paddle Size
@@ -28,12 +24,6 @@ const int OFFSET = 30;
 int X_CENTRE;
 
 
-typedef struct Point {
-  int x;
-  int y;
-} Point;
-
-
 void drawPaddle(int position, int oldpos){
   /* Draws the paddle at the bottom of the screen */
   int vert = 10;
@@ -45,9 +35,8 @@ void drawPaddle(int position, int oldpos){
 }
 
 void drawBall(Point p, Point old){
-  tft.fillCircle(p.x, p.y, 3, ST7735_WHITE);
   tft.fillCircle(old.x, old.y, 3, ST7735_BLACK);
-
+  tft.fillCircle(p.x, p.y, 3, ST7735_WHITE);
 }
 
 Point checkBallPos(Point p){
@@ -103,7 +92,7 @@ void setup(){
   // Initialize screen
   tft.initR(INITR_REDTAB);
   tft.fillScreen(ST7735_BLACK);
-  int position = SCREEN_WIDTH/2;
+  int position = (SCREEN_WIDTH/2) - (PADDLE_WIDTH/2);
   int oldpos;
 
   Point ball;
@@ -115,8 +104,7 @@ void setup(){
 
   bool updateFlag = false;
   drawPaddle(position, 0);
-  // TODO: Add initial brick drawing routine here
-
+  drawBricks(NULL);
   drawBall(ball, oldball);
 
   // Main program loop
