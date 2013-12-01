@@ -11,16 +11,7 @@
 #define BRICK_ROWS 5
 #define BRICK_TOTAL 40
 
-/* COLLISION STRUCT */
-// character indicates if top/bottom, or left/right side hit.
-// boolean indicates if it was a corner
-typedef struct collisionType
-{
-    char valueChange;
-    bool cornerHit;
-} collision;
 
-
-collision* drawBricks(Point* p);
+char drawBricks(Point* p);
 
 #endif

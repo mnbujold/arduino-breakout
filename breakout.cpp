@@ -63,27 +63,27 @@ void drawBall(Point p, Point old){
   tft.fillCircle(p.y, p.x, BALL_RADIUS, ST7735_WHITE);
 }
 
-void checkBallPos(){
+void checkBallPos(char detected){
   /* 
     This function does boundary checking on the ball, also determines where
     it hits the paddle, and changes the behavior of the ball depending.
   */
-  if(ball.x > SCREEN_WIDTH){
-    ball.x = SCREEN_WIDTH;
+  if(ball.x > SCREEN_WIDTH - 3){
+    ball.x = SCREEN_WIDTH - 3;
     xdir = -1;
     playTone(500, 50);
     return;
   }
 
-  if(ball.x < 0){
-    ball.x = 0;
+  if(ball.x < 3){
+    ball.x = 3;
     xdir = 1;
     playTone(500, 50);
     return;
   }
 
-  if(ball.y > SCREEN_HEIGHT){
-    ball.y = SCREEN_HEIGHT;
+  if(ball.y > SCREEN_HEIGHT - 3){
+    ball.y = SCREEN_HEIGHT - 3;
     ydir = -1;
     playTone(500, 50);
     return;
@@ -112,6 +112,20 @@ void checkBallPos(){
     ball.x = paddlepos;
     ydir = 1;
     xdir = 1;
+  }
+  
+  if(detected == 'c')
+  {
+    xdir = -xdir;
+    ydir = -ydir;
+  }
+  else
+  {
+    if(detected == 'x')
+        xdir = -xdir;
+        
+    else if(detected == 'y')
+        ydir = -ydir;
   }
 
 }
@@ -200,8 +214,8 @@ void setup(){
 
     oldball.x = ball.x;
     oldball.y = ball.y;
-    checkBallPos();
-    // Separate fcn: check if ball has hit a brick here...
+    checkBallPos(drawBricks(&ball));
+    
     ball.x += xdir*speed;
     ball.y += ydir*speed;
     drawBall(ball, oldball);

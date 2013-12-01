@@ -35,81 +35,84 @@ void initializeBricks()
             // draw brick to screen
             tft.fillRect(brickLocations[i][j].y, brickLocations[i][j].x,
                          BRICK_HEIGHT, BRICK_WIDTH, rowColors[i]);
+                         
+            // set where bricks begin
+            if((i == BRICK_ROWS - 1) && (j == BRICKS_PER_ROW - 1))
+                bricksBottom = brickLocations[i][j].y;
         }
     }
 }
 
 // used to detect a collision between ball and brick
-collision* detectCollision(Point* p)
+char detectCollision(Point* p)
 {
-    collision* detected = NULL;
-
-    for(int i = BRICK_ROWS - 1; i >= 0; i--)
+    char detected = 'n';
+    
+    if(p->y + 3 >= bricksBottom)
     {
-        for(int j = 0; j < BRICKS_PER_ROW; j++)
+        for(int i = BRICK_ROWS - 1; i >= 0; i--)
         {
-            if(hitBricks[i][j] == false)
+            for(int j = 0; j < BRICKS_PER_ROW; j++)
             {
-                // corner hit detection:
-                      // bottom left
-                if(((p->y + 3 == brickLocations[i][j].y) &&
-                    (p->x + 3 == brickLocations[i][j].x))
-                    ||// bottom right
-                    ((p->y + 3 == brickLocations[i][j].y) &&
-                    (p->x - 3 == brickLocations[i][j].x - BRICK_WIDTH))
-                    ||// top left
-                    ((p->y - 3 == brickLocations[i][j].y - BRICK_HEIGHT) &&
-                    (p->x + 3 == brickLocations[i][j].x))
-                    ||// top right
-                    ((p->y - 3 == brickLocations[i][j].y - BRICK_HEIGHT) &&
-                    (p->x - 3 == brickLocations[i][j].x - BRICK_WIDTH)))
+                if(hitBricks[i][j] == false)
                 {
-                    // brick is hit, fill in with black
-                    hitBricks[i][j] = true;
-                    tft.fillRect(brickLocations[i][j].y, brickLocations[i][j].x,
-                                BRICK_HEIGHT, BRICK_WIDTH, ST7735_BLACK);
-                    
-                    detected = (collision*) malloc(sizeof(collision));
-                    detected->valueChange = 'c';
-                    detected->cornerHit = true;
-                    return detected;
-                }
-                
-                // top or bottom hit detection:
-                else if((p->y + 3 == brickLocations[i][j].y) ||
-                        (p->y - 3 == brickLocations[i][j].y - BRICK_HEIGHT))
-                {
-                    if((p->x > brickLocations[i][j].x) &&
-                       (p->x < brickLocations[i][j].x - BRICK_WIDTH))
+                    // corner hit detection:
+                          // bottom left
+                    if(((p->y + 3 == brickLocations[i][j].y) &&
+                        (p->x + 3 == brickLocations[i][j].x))
+                        ||// bottom right
+                        ((p->y + 3 == brickLocations[i][j].y) &&
+                        (p->x - 3 == brickLocations[i][j].x + BRICK_WIDTH))
+                        ||// top left
+                        ((p->y - 3 == brickLocations[i][j].y + BRICK_HEIGHT) &&
+                        (p->x + 3 == brickLocations[i][j].x))
+                        ||// top right
+                        ((p->y - 3 == brickLocations[i][j].y + BRICK_HEIGHT) &&
+                        (p->x - 3 == brickLocations[i][j].x + BRICK_WIDTH)))
                     {
                         // brick is hit, fill in with black
                         hitBricks[i][j] = true;
                         tft.fillRect(brickLocations[i][j].y, brickLocations[i][j].x,
-                                BRICK_HEIGHT, BRICK_WIDTH, ST7735_BLACK);
-                                
-                        detected = (collision*) malloc(sizeof(collision));
-                        detected->valueChange = 'y';
-                        detected->cornerHit = false;
+                                    BRICK_HEIGHT, BRICK_WIDTH, ST7735_BLACK);
+                        
+                        detected = 'c';
                         return detected;
                     }
-                }
-                
-                // left or right hit detection:
-                else if((p->x + 3 == brickLocations[i][j].x) ||
-                        (p->x - 3 == brickLocations[i][j].x - BRICK_WIDTH))
-                {
-                    if((p->y > brickLocations[i][j].y) &&
-                       (p->y < brickLocations[i][j].y - BRICK_HEIGHT))
+                    
+                    // top or bottom hit detection:
+                    else if((p->y + 3 == brickLocations[i][j].y) ||
+                            (p->y - 3 == brickLocations[i][j].y + BRICK_HEIGHT))
                     {
-                        // brick is hit, fill in with black
-                        hitBricks[i][j] = true;
-                        tft.fillRect(brickLocations[i][j].y, brickLocations[i][j].x,
-                                BRICK_HEIGHT, BRICK_WIDTH, ST7735_BLACK);
-                                
-                        detected = (collision*) malloc(sizeof(collision));
-                        detected->valueChange = 'x';
-                        detected->cornerHit = false;
-                        return detected;
+                        if((p->x + 3 >= brickLocations[i][j].x) &&
+                           (p->x - 3 <= brickLocations[i][j].x + BRICK_WIDTH))
+                        {
+                            // brick is hit, fill in with black
+                            hitBricks[i][j] = true;
+                            tft.fillRect(brickLocations[i][j].y, brickLocations[i][j].x,
+                                    BRICK_HEIGHT, BRICK_WIDTH, ST7735_BLACK);
+                            
+                            // balls y direction changes
+                            detected = 'y';
+                            return detected;
+                        }
+                    }
+                    
+                    // left or right hit detection:
+                    else if((p->x + 3 == brickLocations[i][j].x) ||
+                            (p->x - 3 == brickLocations[i][j].x + BRICK_WIDTH))
+                    {
+                        if((p->y + 3 >= brickLocations[i][j].y) &&
+                           (p->y - 3 <= brickLocations[i][j].y + BRICK_HEIGHT))
+                        {
+                            // brick is hit, fill in with black
+                            hitBricks[i][j] = true;
+                            tft.fillRect(brickLocations[i][j].y, brickLocations[i][j].x,
+                                    BRICK_HEIGHT, BRICK_WIDTH, ST7735_BLACK);
+                                    
+                            // balls x direction changes
+                            detected = 'x';
+                            return detected;
+                        }
                     }
                 }
             }
@@ -123,11 +126,12 @@ collision* detectCollision(Point* p)
 // function used to draw the bricks. Point p is ball position.
 // If p is NULL, then this function draws all initial bricks to the screen.
 // If p is not NULL, then p is checked for collision with bricks, then updates bricks hit.
-collision* drawBricks(Point* p)
+char drawBricks(Point* p)
 {
     if(p == NULL)
     {
         initializeBricks();
+        return 'n';
     }
     else
     {
