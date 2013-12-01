@@ -74,10 +74,18 @@ void setup(){
   int position = SCREEN_WIDTH/2;
   int oldpos;
 
+  bool updateFlag = false;
+  drawPaddle(position, 0);
+  
   while(1){
     oldpos = position;
     position = readJoystick(position);
-    drawPaddle(position, oldpos);
+    if(position != oldpos)
+      updateFlag = !updateFlag;
+    if(updateFlag){
+      drawPaddle(position, oldpos);
+      updateFlag = false;
+    }
 
     delay(20);
   }
