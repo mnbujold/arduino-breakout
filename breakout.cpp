@@ -58,21 +58,33 @@ void checkBallPos(){
   if(ball.x > SCREEN_WIDTH){
     ball.x = SCREEN_WIDTH;
     xdir = -1;
+    return;
   }
+
   if(ball.x < 0){
     ball.x = 0;
     xdir = 1;
+    return;
   }
 
   if(ball.y > SCREEN_HEIGHT){
     ball.y = SCREEN_HEIGHT;
     ydir = -1;
+    return;
   }
 
 
-  if(ball.y < 19 ){
+  if(ball.y < 19 && (ball.x >= paddlepos && ball.x <= paddlepos+PADDLE_WIDTH)){
     ball.y = 19;
     ydir = 1;
+    return;
+  }
+
+  if(ball.y < 10 && (ball.x < paddlepos || ball.x > paddlepos+PADDLE_WIDTH)) {
+    ball.y = SCREEN_HEIGHT/2;
+    ball.x = SCREEN_WIDTH/2;
+    ydir = 1;
+    xdir = 1;
   }
 
 }
