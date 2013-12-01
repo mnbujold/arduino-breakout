@@ -16,9 +16,10 @@ Features to be Added:
 - Sound
 - Scoring
 - Ball 'physics' (eg. spin, speed, angle)
+- High Score Storage (Maybe...)
 
 Special Thanks:  
 The great and powerful Woz - who inspired the idea for this implementation.
 
-Disclaimer
+Disclaimer  
 This code is for use by the above named individuals for the purposes of a for-credit project. Any use of this code by individuals in the same course will be viewed as plagiarism as per the U of A Code of Student Behaviour (Section 30.3.2[1]) and will be reported to the appropriate University representatives accordingly. Individuals not associated with the University of Alberta may view and re-use this code as they see fit.
