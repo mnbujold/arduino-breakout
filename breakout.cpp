@@ -23,6 +23,28 @@ const int INCREMENT = 5;
 const int OFFSET = 30;
 int X_CENTRE;
 
+const int speakerPin = 11;
+
+
+
+Point ball, oldball;
+int xdir, ydir;
+int paddlepos;
+
+
+void playTone(int period, int duration){
+  long elapsedTime = 0;
+  int halfPeriod = period/2;
+
+  while (elapsedTime < duration * 1000L){
+    digitalWrite(speakerPin, HIGH);
+    delayMicroseconds(halfPeriod);
+    digitalWrite(speakerPin, LOW);
+    delayMicroseconds(halfPeriod);
+    elapsedTime = elapsedTime + period;
+  }
+}
+
 
 void drawPaddle(int position, int oldpos){
   /* Draws the paddle at the bottom of the screen */
@@ -35,29 +57,49 @@ void drawPaddle(int position, int oldpos){
 }
 
 void drawBall(Point p, Point old){
-  tft.fillCircle(old.x, old.y, 3, ST7735_BLACK);
-  tft.fillCircle(p.x, p.y, 3, ST7735_WHITE);
+
+  tft.fillCircle(old.y, old.x, 3, ST7735_BLACK);
+  tft.fillCircle(p.y, p.x, 3, ST7735_WHITE);
 }
 
-Point checkBallPos(Point p){
-  
-  Point r;
+void checkBallPos(){
 
-  if(p.x > SCREEN_WIDTH){
-    r.x = SCREEN_WIDTH;
-  }
-  if(p.x < 0){
-    r.x = 0;
+  if(ball.x > SCREEN_WIDTH){
+    ball.x = SCREEN_WIDTH;
+    xdir = -1;
+    playTone(500, 50);
+    return;
   }
 
-  if(p.y > SCREEN_HEIGHT){
-    r.y = SCREEN_HEIGHT;
-  }
-  if(p.y < 0){
-    r.y = 0;
+  if(ball.x < 0){
+    ball.x = 0;
+    xdir = 1;
+    playTone(500, 50);
+    return;
   }
 
-  return r;
+  if(ball.y > SCREEN_HEIGHT){
+    ball.y = SCREEN_HEIGHT;
+    ydir = -1;
+    playTone(500, 50);
+    return;
+  }
+
+
+  if(ball.y < 19 && (ball.x >= paddlepos && ball.x <= paddlepos+PADDLE_WIDTH)){
+    ball.y = 19;
+    ydir = 1;
+    playTone(500, 50);
+    return;
+  }
+
+  if(ball.y < 10 && (ball.x < paddlepos || ball.x > paddlepos+PADDLE_WIDTH)) {
+    playTone(500,500);
+    ball.y = SCREEN_HEIGHT/2;
+    ball.x = SCREEN_WIDTH/2;
+    ydir = 1;
+    xdir = 1;
+  }
 
 }
 
@@ -88,6 +130,7 @@ void setup(){
   X_CENTRE = analogRead(HOR);
   pinMode(SEL, INPUT);
   digitalWrite(SEL, HIGH);
+  pinMode(speakerPin, OUTPUT);
   // TODO: Check if joystick is depressed here at startup to use accelerometer for control instead
   // Initialize screen
   tft.initR(INITR_REDTAB);
@@ -95,12 +138,13 @@ void setup(){
   int position = (SCREEN_WIDTH/2) - (PADDLE_WIDTH/2);
   int oldpos;
 
-  Point ball;
   ball.x = SCREEN_WIDTH/2;
   ball.y = SCREEN_HEIGHT/2;
-  Point oldball;
   oldball.x = 0;
   oldball.y = 0;
+
+  xdir = 1;
+  ydir = 1;
 
   bool updateFlag = false;
   drawPaddle(position, 0);
@@ -109,6 +153,8 @@ void setup(){
 
   // Main program loop
   while(1){
+    paddlepos = position;
+
     oldpos = position;
     position = readJoystick(position);
     if(position != oldpos)
@@ -120,9 +166,10 @@ void setup(){
 
     oldball.x = ball.x;
     oldball.y = ball.y;
-    ball.x += 1;
-    ball.y += 1;
-    ball = checkBallPos(ball);
+    checkBallPos();
+    // Separate fcn: check if ball has hit a brick here...
+    ball.x += xdir;
+    ball.y += ydir;
     drawBall(ball, oldball);
 
     delay(20);
