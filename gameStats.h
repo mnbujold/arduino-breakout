@@ -1,8 +1,6 @@
 #ifndef GAMESTATS_H
 #define GAMESTATS_H
 
-#include <Adafruit_ST7735.h>
-
 /* DEFINITIONS */
 #define STARTING_LIVES 3
 
@@ -13,5 +11,6 @@ int getScore();
 int getLivesLeft();
 void resetAll();
 void displayStats();
+void endGame();
 
 #endif

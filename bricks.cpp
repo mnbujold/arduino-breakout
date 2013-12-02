@@ -80,7 +80,6 @@ char detectCollision(Point* p)
                         
                         //add to score
                         increaseScore(rowScores[i]);
-                        displayStats();
                         
                         // ball hit a corner
                         detected = 'c';
@@ -101,7 +100,6 @@ char detectCollision(Point* p)
                             
                             //add to score
                             increaseScore(rowScores[i]);
-                            displayStats();
                             
                             // balls y direction changes
                             detected = 'y';
@@ -122,8 +120,7 @@ char detectCollision(Point* p)
                                     BRICK_HEIGHT, BRICK_WIDTH, ST7735_BLACK);
                             
                             //add to score
-                            increaseScore(rowScores[i]); 
-                            displayStats();       
+                            increaseScore(rowScores[i]);     
                             
                             // balls x direction changes
                             detected = 'x';

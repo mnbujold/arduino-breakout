@@ -67,21 +67,21 @@ void checkBallPos(char detected){
     This function does boundary checking on the ball, also determines where
     it hits the paddle, and changes the behavior of the ball depending.
   */
-  if(ball.x > SCREEN_WIDTH - 3){
+  if(ball.x >= SCREEN_WIDTH - 3){
     ball.x = SCREEN_WIDTH - 3;
     xdir = -1;
     playTone(500, 50);
     return;
   }
 
-  if(ball.x < 3){
+  if(ball.x <= 3){
     ball.x = 3;
     xdir = 1;
     playTone(500, 50);
     return;
   }
 
-  if(ball.y > SCREEN_HEIGHT - 3){
+  if(ball.y >= SCREEN_HEIGHT - 3){
     ball.y = SCREEN_HEIGHT - 3;
     ydir = -1;
     playTone(500, 50);
@@ -109,6 +109,7 @@ void checkBallPos(char detected){
     ball.x = paddlepos;
     ydir = 1;
     xdir = 1;
+    decreaseLives();
   }
   
   if(detected == 'c')
@@ -195,7 +196,14 @@ void setup(){
 
     oldball.x = ball.x;
     oldball.y = ball.y;
+    
+    // collision detection for bricks done in here
     checkBallPos(drawBricks(&ball));
+    
+    // check how many lives left. If zero, end the game.
+    if(getLivesLeft() <= 0)
+        endGame();
+
     
     ball.x += xdir*speed;
     ball.y += ydir*speed;
