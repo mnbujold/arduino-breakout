@@ -4,6 +4,7 @@
 #include <SPI.h>
 
 #include "breakout.h"
+#include "gameStats.h"
 #include "bricks.h"
 
 /* GLOBAL VARIABLES */
@@ -13,6 +14,8 @@ bool hitBricks[BRICK_ROWS][BRICKS_PER_ROW];
 Point brickLocations[BRICK_ROWS][BRICKS_PER_ROW];
 // array defines brick row colors
 const uint16_t rowColors[] = {ST7735_RED, ST7735_MAGENTA, ST7735_YELLOW, ST7735_GREEN, ST7735_BLUE};
+// array defines brick row point worth
+const int rowScores[] = {7, 5, 3, 2, 1};
 // indicates beginning of bricks on-screen
 int bricksBottom;
 
@@ -75,6 +78,11 @@ char detectCollision(Point* p)
                         tft.fillRect(brickLocations[i][j].y, brickLocations[i][j].x,
                                     BRICK_HEIGHT, BRICK_WIDTH, ST7735_BLACK);
                         
+                        //add to score
+                        increaseScore(rowScores[i]);
+                        displayStats();
+                        
+                        // ball hit a corner
                         detected = 'c';
                         return detected;
                     }
@@ -90,6 +98,10 @@ char detectCollision(Point* p)
                             hitBricks[i][j] = true;
                             tft.fillRect(brickLocations[i][j].y, brickLocations[i][j].x,
                                     BRICK_HEIGHT, BRICK_WIDTH, ST7735_BLACK);
+                            
+                            //add to score
+                            increaseScore(rowScores[i]);
+                            displayStats();
                             
                             // balls y direction changes
                             detected = 'y';
@@ -108,7 +120,11 @@ char detectCollision(Point* p)
                             hitBricks[i][j] = true;
                             tft.fillRect(brickLocations[i][j].y, brickLocations[i][j].x,
                                     BRICK_HEIGHT, BRICK_WIDTH, ST7735_BLACK);
-                                    
+                            
+                            //add to score
+                            increaseScore(rowScores[i]); 
+                            displayStats();       
+                            
                             // balls x direction changes
                             detected = 'x';
                             return detected;

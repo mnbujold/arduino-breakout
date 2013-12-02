@@ -11,7 +11,7 @@
 #define BRICK_ROWS 5
 #define BRICK_TOTAL 40
 
-
+/* SHARED FUNCTIONS */
 char drawBricks(Point* p);
 
 #endif

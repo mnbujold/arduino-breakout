@@ -4,6 +4,7 @@
 #include <SPI.h>
 
 #include "breakout.h"
+#include "gameStats.h"
 #include "bricks.h"
 
 /* GLOBAL VARIABLES */
@@ -30,8 +31,6 @@ const int BALL_RADIUS = 3;
 Point ball, oldball;
 int xdir, ydir;
 int paddlepos;
-
-int totalScore = 0;
 
 void playTone(int period, int duration){
   long elapsedTime = 0;
@@ -93,7 +92,6 @@ void checkBallPos(char detected){
     ball.y = 19;
     ydir = 1;
     xdir = 0;
-    totalScore++;
     playTone(500,50);
     return;
   }
@@ -101,7 +99,6 @@ void checkBallPos(char detected){
   if(ball.y < 19 && (ball.x >= paddlepos && ball.x <= paddlepos+PADDLE_WIDTH)){
     ball.y = 19;
     ydir = 1;
-    totalScore++;
     playTone(500, 50);
     return;
   }
@@ -150,21 +147,6 @@ int readJoystick(int position){
   return(position);
 }
 
-void displayInfo(int score){
-  // Testing out score display...
-  tft.setRotation(1);
-  tft.setTextColor(ST7735_WHITE);
-  tft.setTextSize(1);
-  tft.fillRect(0,120,50,4,ST7735_BLACK);
-  tft.setCursor(0,120);
-  tft.print("Score: ");
-  tft.print(score);
-  tft.setCursor(140,120);
-  tft.print("ooo");
-
-  tft.setRotation(0);
-}
-
 void setup(){
   // Start serial communication for debugging
   Serial.begin(9600);
@@ -195,7 +177,7 @@ void setup(){
   
 
   int speed = 1;
-  displayInfo(totalScore);
+  displayStats();
 
   // Main program loop
   while(1){
@@ -208,7 +190,6 @@ void setup(){
       updateFlag = !updateFlag;
     if(updateFlag){
       drawPaddle(position, oldpos);
-      displayInfo(totalScore);
       updateFlag = false;
     }
 
@@ -219,7 +200,7 @@ void setup(){
     ball.x += xdir*speed;
     ball.y += ydir*speed;
     drawBall(ball, oldball);
-
+    
     delay(20);
   }
   
