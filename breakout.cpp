@@ -96,13 +96,23 @@ void checkBallPos(char detected){
     return;
   }
 
-  if(ball.y < 19 && (ball.x >= paddlepos && ball.x <= paddlepos+PADDLE_WIDTH)){
+  if(ball.y < 19 && ( ball.x <= paddlepos+PADDLE_WIDTH)){
     ball.y = 19;
     ydir = 1;
+    xdir = 1;
+    Serial.println(xdir);
     playTone(500, 50);
     return;
   }
 
+  if(ball.y < 19 && (ball.x >= paddlepos )){
+    ball.y = 19;
+    ydir = 1;
+    xdir = -1;
+    Serial.println(xdir);
+    playTone(500, 50);
+    return;
+  }
   if(ball.y < 10 && (ball.x < paddlepos || ball.x > paddlepos+PADDLE_WIDTH)) {
     playTone(500,500);
     ball.y = SCREEN_HEIGHT/2;
@@ -116,14 +126,19 @@ void checkBallPos(char detected){
   {
     xdir = -xdir;
     ydir = -ydir;
+    playTone(200,50);
   }
   else
   {
-    if(detected == 'x')
+    if(detected == 'x'){
         xdir = -xdir;
+        playTone(200,50);
+    }
         
-    else if(detected == 'y')
+    else if(detected == 'y'){
         ydir = -ydir;
+        playTone(200,50);
+    }
   }
 
 }
@@ -151,6 +166,7 @@ int readJoystick(int position){
 void setup(){
   // Start serial communication for debugging
   Serial.begin(9600);
+  randomSeed(analogRead(4));
   // Calibrate 'centre' position of joystick
   X_CENTRE = analogRead(HOR);
   pinMode(SEL, INPUT);
