@@ -7,8 +7,10 @@
 /* GLOBAL VARIABLES */
 // keeps track of player score
 int score = 0;
-//keeps track of lives player has left
+// keeps track of lives player has left
 int lives = STARTING_LIVES;
+// penalty for losing a life. Varies depending on difficulty
+int penalty = 10;
 
 
 /* FUNCTIONS */
@@ -19,10 +21,15 @@ void increaseScore(int points)
     displayStats();
 }
 
-// lose a life
+// lose a life, and get a score penalty
 void decreaseLives()
 {
     lives--;
+    score -= penalty;
+    
+    if(score < 0)
+        score = 0;
+        
     displayStats();
 }
 
@@ -55,7 +62,7 @@ void displayStats()
     
     tft.fillRect(0, 120, SCREEN_HEIGHT, 8, ST7735_BLACK);
     
-    tft.setCursor(0,120);
+    tft.setCursor(5,120);
     
     tft.print("Score:");
     tft.print(score);
@@ -88,5 +95,25 @@ void endGame()
     tft.setRotation(0);
     
     while(true) {}
+}
+
+// displays pause message to screen
+void pauseGame(bool paused)
+{
+    tft.setRotation(1);
+    tft.setTextColor(ST7735_WHITE);
+    tft.setTextSize(2);
+    
+    if(paused)
+    {
+        tft.setCursor(45, 70);
+        tft.print("PAUSED");
+    }
+    else
+    {
+        tft.fillRect(45, 70, SCREEN_WIDTH, 20, ST7735_BLACK);
+    }
+    
+    tft.setRotation(0);
 }
 

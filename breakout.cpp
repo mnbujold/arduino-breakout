@@ -22,6 +22,7 @@ int oldPaddlePos;
 
 // determines if paddle moved
 bool updateFlag = false;
+bool paused = false;
 
 
 /* FUNCTIONS */
@@ -71,15 +72,19 @@ void readJoystick()
     }
 }
 
+/* SETUP FUNCTION */
 void setup(){
     // Start serial communication for debugging
     Serial.begin(9600);
 
     // Calibrate 'centre' position of joystick, initialize joystick click
     X_CENTRE = analogRead(HOR);
-    Y_CENTRE = analogRead(VERT);
     pinMode(SEL, INPUT);
     digitalWrite(SEL, HIGH);
+    
+    // initialize select/pause button
+    pinMode(PAUSE, INPUT);
+    digitalWrite(PAUSE, HIGH);
 
     // initialize speaker
     pinMode(SPEAKER, OUTPUT);
@@ -94,7 +99,7 @@ void setup(){
     oldPaddlePos = 0;
 
     // initial ball position on paddle
-    initializeBall();
+    initializeBall(paddlePos);
     
     // draw initial objects to screen
     drawPaddle();
@@ -103,38 +108,68 @@ void setup(){
     displayStats();
 }
 
+/* LOOP FUNCTION */
 void loop()
-{   
-    //Read select pin, to see if joystick has been clicked
-    if(digitalRead(SEL) == LOW && ballOnPaddle())
+{
+    // read pause pin, unpause game if button is clicked
+    if(digitalRead(PAUSE) == LOW && paused)
     {
-        launchBall();
-        while(digitalRead(SEL) == LOW) {}
+        paused = false;
+        while(digitalRead(PAUSE) == LOW) {}
+        pauseGame(paused);
     }
-
-    // update paddle position
-    oldPaddlePos = paddlePos;
-    readJoystick();
     
-    if(paddlePos != oldPaddlePos)
-        updateFlag = !updateFlag;
-      
-    if(updateFlag)
+    
+    /* MENU LOOP */
+    while(false)
     {
-        drawPaddle();
-        updateFlag = false;
+    
     }
+    
+    
+    /* GAME LOOP */
+    while(!paused)
+    {
+        //Read select pin, to see if joystick has been clicked
+        if(digitalRead(SEL) == LOW && ballOnPaddle())
+        {
+            launchBall();
+            while(digitalRead(SEL) == LOW) {}
+        }
+        
+        // read pause pin, pause game if button is clicked
+        if(digitalRead(PAUSE) == LOW && !paused)
+        {
+            paused = true;
+            pauseGame(paused);
+            while(digitalRead(PAUSE) == LOW) {}
+            break;
+        }
+
+        // update paddle position
+        oldPaddlePos = paddlePos;
+        readJoystick();
+        
+        if(paddlePos != oldPaddlePos)
+            updateFlag = !updateFlag;
+          
+        if(updateFlag)
+        {
+            drawPaddle();
+            updateFlag = false;
+        }
 
 
-    // now update balls position
-    updateBallPos(paddlePos);
-    
-    // check how many lives left. If zero, end the game.
-    if(getLivesLeft() <= 0)
-        endGame();
-    
-    // draw the ball
-    drawBall();
-    
-    delay(20);
+        // now update balls position
+        updateBallPos(paddlePos);
+        
+        // check how many lives left. If zero, end the game.
+        if(getLivesLeft() <= 0)
+            endGame();
+        
+        // draw the ball
+        drawBall();
+        
+        delay(15);
+    }
 }

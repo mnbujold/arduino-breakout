@@ -12,5 +12,6 @@ int getLivesLeft();
 void resetAll();
 void displayStats();
 void endGame();
+void pauseGame(bool paused);
 
 #endif

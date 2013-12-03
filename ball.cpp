@@ -22,9 +22,9 @@ void drawBall()
 
 
 // initializes ball to start on paddle
-void initializeBall()
+void initializeBall(int paddlePos)
 {
-    ball.x = SCREEN_WIDTH/2;
+    ball.x = paddlePos + (PADDLE_WIDTH / 2);
     ball.y = PADDLE_LEVEL + PADDLE_HEIGHT + BALL_RADIUS;
     oldball.x = 0;
     oldball.y = 0;
@@ -39,11 +39,8 @@ void initializeBall()
 
 // This function does boundary checking on the ball, also determines where
 // it hits the paddle, and changes the behavior of the ball depending.
-void checkBallCollisions(int paddlepos)
-{
-    // get paddle position
-    //TODO
-    
+void checkBallCollisions(int paddlePos)
+{    
     // first check for any brick collisions
     char detected = drawBricks(&ball);
     
@@ -53,7 +50,7 @@ void checkBallCollisions(int paddlepos)
         // right wall
         if(ball.x >= SCREEN_WIDTH - BALL_RADIUS)
         {
-            ball.x = SCREEN_WIDTH - BALL_RADIUS;
+            ball.x = SCREEN_WIDTH - (BALL_RADIUS + 1);
             xdir = -xdir;
             playTone(500, 50);
             return;
@@ -61,7 +58,7 @@ void checkBallCollisions(int paddlepos)
         // left wall
         if(ball.x <= BALL_RADIUS)
         {
-            ball.x = BALL_RADIUS;
+            ball.x = BALL_RADIUS + 1;
             xdir = -xdir;
             playTone(500, 50);
             return;
@@ -69,45 +66,49 @@ void checkBallCollisions(int paddlepos)
         // ceiling
         if(ball.y >= SCREEN_HEIGHT - BALL_RADIUS)
         {
-            ball.y = SCREEN_HEIGHT - BALL_RADIUS;
-            ydir = -ydir;
+            ydir = -1.0;
             playTone(500, 50);
             return;
         }
-
-        if(ball.y < 19 && (ball.x <= paddlepos+(PADDLE_WIDTH/2)+3 && ball.x >= paddlepos+(PADDLE_WIDTH/2)-3))
+        // middle of paddle
+        if(ball.y <= 19 && (ball.x <= paddlePos + (PADDLE_WIDTH / 2) + (BALL_RADIUS + 1) &&
+                            ball.x >= paddlePos + (PADDLE_WIDTH / 2) - (BALL_RADIUS + 1)))
         {
-            ball.y = 19;
-            ydir = 1;
-            xdir = 0;
+            ball.y = 20;
+            ydir = 1.0;
             playTone(500,50);
             return;
         }
-
-        if(ball.y < 19 && ( ball.x <= paddlepos+PADDLE_WIDTH))
+        // right side of paddle
+        else if(ball.y <= 19 && ((ball.x <= paddlePos + PADDLE_WIDTH) &&
+                                 (ball.x > paddlePos + (PADDLE_WIDTH / 2) + (BALL_RADIUS + 1))))
         {
-            ball.y = 19;
-            ydir = 1;
-            xdir = 1;
-            Serial.println(xdir);
+            ball.y = 20;
+            ydir = 1.0;
+            xdir += 1.0;
             playTone(500, 50);
             return;
         }
-
-        if(ball.y < 19 && (ball.x >= paddlepos ))
+        // left side of paddle
+        else if(ball.y <= 19 && ((ball.x >= paddlePos) &&
+                                 (ball.x < paddlePos + (PADDLE_WIDTH / 2) - (BALL_RADIUS + 1))))
         {
-            ball.y = 19;
-            ydir = 1;
-            xdir = -1;
-            Serial.println(xdir);
+            ball.y = 20;
+            ydir = 1.0;
+            xdir -= 1.0;
             playTone(500, 50);
             return;
         }
-        if(ball.y < 10 && (ball.x < paddlepos || ball.x > paddlepos+PADDLE_WIDTH))
+        // ball hits floor, lives lost, score deducted
+        if(ball.y <= 10 && ((ball.x < paddlePos) || (ball.x > paddlePos + PADDLE_WIDTH)))
         {
             playTone(500,500);
-            initializeBall();
+            tft.fillCircle(ball.y, ball.x, BALL_RADIUS, ST7735_BLACK);
+            drawPaddle();
+            initializeBall(paddlePos);
             decreaseLives();
+            displayStats();
+            delay(20);
         }
     }
     // brick collision detected, adjust ball accordingly

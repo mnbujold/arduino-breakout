@@ -16,8 +16,10 @@ extern Adafruit_ST7735 tft;
 #define VERT 1
 #define HOR 0
 #define SEL 9
-#define INCREMENT 5
 #define OFFSET 30
+
+// pause button pin
+#define PAUSE 10
 
 // speaker pin
 #define SPEAKER 11
@@ -25,10 +27,11 @@ extern Adafruit_ST7735 tft;
 #define SCREEN_HEIGHT tft.width()
 #define SCREEN_WIDTH tft.height()
 
-// paddle dimensions
-#define PADDLE_WIDTH 25
+// paddle dimensions and variables
+#define PADDLE_WIDTH 35
 #define PADDLE_HEIGHT 5
 #define PADDLE_LEVEL 10
+#define INCREMENT 3
 
 
 /* POINT STRUCT */
@@ -40,5 +43,6 @@ typedef struct Point
 
 /* SHARED FUNCTIONS */
 void playTone(int period, int duration);
+void drawPaddle();
 
 #endif

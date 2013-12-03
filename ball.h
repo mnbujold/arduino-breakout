@@ -4,11 +4,11 @@
 #include "breakout.h"
 
 /* DEFINITIONS */
-#define BALL_RADIUS 3
+#define BALL_RADIUS 2
 
 /* SHARED FUNCTIONS */
 void drawBall();
-void initializeBall();
+void initializeBall(int paddlePos);
 void updateBallPos(int paddlePos);
 bool ballOnPaddle();
 void launchBall();

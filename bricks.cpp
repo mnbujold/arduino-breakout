@@ -59,34 +59,7 @@ char detectCollision(Point* p)
             for(int j = 0; j < BRICKS_PER_ROW; j++)
             {
                 if(hitBricks[i][j] == false)
-                {
-                    // corner hit detection:
-                          // bottom left
-                    if(((p->y + BALL_RADIUS == brickLocations[i][j].y) &&
-                        (p->x + BALL_RADIUS == brickLocations[i][j].x))
-                        ||// bottom right
-                        ((p->y + BALL_RADIUS == brickLocations[i][j].y) &&
-                        (p->x - BALL_RADIUS == brickLocations[i][j].x + BRICK_WIDTH))
-                        ||// top left
-                        ((p->y - BALL_RADIUS == brickLocations[i][j].y + BRICK_HEIGHT) &&
-                        (p->x + BALL_RADIUS == brickLocations[i][j].x))
-                        ||// top right
-                        ((p->y - BALL_RADIUS == brickLocations[i][j].y + BRICK_HEIGHT) &&
-                        (p->x - BALL_RADIUS == brickLocations[i][j].x + BRICK_WIDTH)))
-                    {
-                        // brick is hit, fill in with black
-                        hitBricks[i][j] = true;
-                        tft.fillRect(brickLocations[i][j].y, brickLocations[i][j].x,
-                                    BRICK_HEIGHT, BRICK_WIDTH, ST7735_BLACK);
-                        
-                        //add to score
-                        increaseScore(rowScores[i]);
-                        
-                        // ball hit a corner
-                        detected = 'c';
-                        return detected;
-                    }
-                    
+                {   
                     // top or bottom hit detection:
                     if((p->y + BALL_RADIUS == brickLocations[i][j].y) ||
                             (p->y - BALL_RADIUS == brickLocations[i][j].y + BRICK_HEIGHT))
@@ -104,12 +77,11 @@ char detectCollision(Point* p)
                             
                             // balls y direction changes
                             detected = 'y';
-                            return detected;
                         }
                     }
                     
                     // left or right hit detection:
-                    if((p->x + BALL_RADIUS == brickLocations[i][j].x) ||
+                    else if((p->x + BALL_RADIUS == brickLocations[i][j].x) ||
                             (p->x - BALL_RADIUS == brickLocations[i][j].x + BRICK_WIDTH))
                     {
                         if((p->y + BALL_RADIUS >= brickLocations[i][j].y) &&
@@ -119,14 +91,39 @@ char detectCollision(Point* p)
                             hitBricks[i][j] = true;
                             tft.fillRect(brickLocations[i][j].y, brickLocations[i][j].x,
                                     BRICK_HEIGHT, BRICK_WIDTH, ST7735_BLACK);
-                            
+                                
                             //add to score
-                            increaseScore(rowScores[i]);     
+                            increaseScore(rowScores[i]);
                             
-                            // balls x direction changes
-                            detected = 'x';
-                            return detected;
+                            // if a top or bottom hit, then treated as corner hit
+                            if(detected == 'y')
+                            {    
+                                detected = 'c';
+                            }
+                            else
+                            {
+                                // balls x direction changes
+                                detected = 'x'; 
+                            }
                         }
+                    }
+                    
+                    // in case ball ends up inside brick
+                    else if(((p->y > brickLocations[i][j].y) &&
+                       (p->y < brickLocations[i][j].y + BRICK_HEIGHT)) &&
+                       ((p->x > brickLocations[i][j].x) &&
+                       (p->x < brickLocations[i][j].x + BRICK_WIDTH)))
+                    {
+                        // brick is hit, fill in with black
+                        hitBricks[i][j] = true;
+                        tft.fillRect(brickLocations[i][j].y, brickLocations[i][j].x,
+                                    BRICK_HEIGHT, BRICK_WIDTH, ST7735_BLACK);
+                        
+                        // add to score
+                        increaseScore(rowScores[i]);
+                        
+                        // treat as a left/right
+                        detected = 'x';
                     }
                 }
             }
