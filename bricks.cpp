@@ -6,6 +6,7 @@
 #include "breakout.h"
 #include "gameStats.h"
 #include "bricks.h"
+#include "ball.h"
 
 /* GLOBAL VARIABLES */
 // Brick array for visibility
@@ -51,7 +52,7 @@ char detectCollision(Point* p)
 {
     char detected = 'n';
     
-    if(p->y + 3 >= bricksBottom)
+    if(p->y + BALL_RADIUS >= bricksBottom)
     {
         for(int i = BRICK_ROWS - 1; i >= 0; i--)
         {
@@ -61,17 +62,17 @@ char detectCollision(Point* p)
                 {
                     // corner hit detection:
                           // bottom left
-                    if(((p->y + 3 == brickLocations[i][j].y) &&
-                        (p->x + 3 == brickLocations[i][j].x))
+                    if(((p->y + BALL_RADIUS == brickLocations[i][j].y) &&
+                        (p->x + BALL_RADIUS == brickLocations[i][j].x))
                         ||// bottom right
-                        ((p->y + 3 == brickLocations[i][j].y) &&
-                        (p->x - 3 == brickLocations[i][j].x + BRICK_WIDTH))
+                        ((p->y + BALL_RADIUS == brickLocations[i][j].y) &&
+                        (p->x - BALL_RADIUS == brickLocations[i][j].x + BRICK_WIDTH))
                         ||// top left
-                        ((p->y - 3 == brickLocations[i][j].y + BRICK_HEIGHT) &&
-                        (p->x + 3 == brickLocations[i][j].x))
+                        ((p->y - BALL_RADIUS == brickLocations[i][j].y + BRICK_HEIGHT) &&
+                        (p->x + BALL_RADIUS == brickLocations[i][j].x))
                         ||// top right
-                        ((p->y - 3 == brickLocations[i][j].y + BRICK_HEIGHT) &&
-                        (p->x - 3 == brickLocations[i][j].x + BRICK_WIDTH)))
+                        ((p->y - BALL_RADIUS == brickLocations[i][j].y + BRICK_HEIGHT) &&
+                        (p->x - BALL_RADIUS == brickLocations[i][j].x + BRICK_WIDTH)))
                     {
                         // brick is hit, fill in with black
                         hitBricks[i][j] = true;
@@ -87,11 +88,11 @@ char detectCollision(Point* p)
                     }
                     
                     // top or bottom hit detection:
-                    else if((p->y + 3 == brickLocations[i][j].y) ||
-                            (p->y - 3 == brickLocations[i][j].y + BRICK_HEIGHT))
+                    else if((p->y + BALL_RADIUS == brickLocations[i][j].y) ||
+                            (p->y - BALL_RADIUS == brickLocations[i][j].y + BRICK_HEIGHT))
                     {
-                        if((p->x + 3 >= brickLocations[i][j].x) &&
-                           (p->x - 3 <= brickLocations[i][j].x + BRICK_WIDTH))
+                        if((p->x + BALL_RADIUS >= brickLocations[i][j].x) &&
+                           (p->x - BALL_RADIUS <= brickLocations[i][j].x + BRICK_WIDTH))
                         {
                             // brick is hit, fill in with black
                             hitBricks[i][j] = true;
@@ -108,11 +109,11 @@ char detectCollision(Point* p)
                     }
                     
                     // left or right hit detection:
-                    else if((p->x + 3 == brickLocations[i][j].x) ||
-                            (p->x - 3 == brickLocations[i][j].x + BRICK_WIDTH))
+                    else if((p->x + BALL_RADIUS == brickLocations[i][j].x) ||
+                            (p->x - BALL_RADIUS == brickLocations[i][j].x + BRICK_WIDTH))
                     {
-                        if((p->y + 3 >= brickLocations[i][j].y) &&
-                           (p->y - 3 <= brickLocations[i][j].y + BRICK_HEIGHT))
+                        if((p->y + BALL_RADIUS >= brickLocations[i][j].y) &&
+                           (p->y - BALL_RADIUS <= brickLocations[i][j].y + BRICK_HEIGHT))
                         {
                             // brick is hit, fill in with black
                             hitBricks[i][j] = true;
@@ -132,7 +133,7 @@ char detectCollision(Point* p)
         }
     }
     
-    // return null if no collision detected
+    // return 'n' if no collision detected
     return detected;
 }
 

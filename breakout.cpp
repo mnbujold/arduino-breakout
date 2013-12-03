@@ -6,43 +6,35 @@
 #include "breakout.h"
 #include "gameStats.h"
 #include "bricks.h"
+#include "ball.h"
 
 /* GLOBAL VARIABLES */
 // tft display
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
 
-// Paddle Size
-const int PADDLE_WIDTH = 25;
-const int PADDLE_HEIGHT = 5;
 
-// Joystick Pins
-const int VERT = 1;
-const int HOR = 0;
-const int SEL = 9;
 // Joystick Defs
 const int INCREMENT = 5;
 const int OFFSET = 30;
 int X_CENTRE;
 
-const int speakerPin = 11;
 
 // Ball-Specific Variables
-const int BALL_RADIUS = 3;
-Point ball, oldball;
-int xdir, ydir;
 int paddlepos;
 
-void playTone(int period, int duration){
-  long elapsedTime = 0;
-  int halfPeriod = period/2;
+void playTone(int period, int duration)
+{
+    long elapsedTime = 0;
+    int halfPeriod = period/2;
 
-  while (elapsedTime < duration * 1000L){
-    digitalWrite(speakerPin, HIGH);
-    delayMicroseconds(halfPeriod);
-    digitalWrite(speakerPin, LOW);
-    delayMicroseconds(halfPeriod);
-    elapsedTime = elapsedTime + period;
-  }
+    while (elapsedTime < duration * 1000L)
+    {
+        digitalWrite(SPEAKER, HIGH);
+        delayMicroseconds(halfPeriod);
+        digitalWrite(SPEAKER, LOW);
+        delayMicroseconds(halfPeriod);
+        elapsedTime = elapsedTime + period;
+    }
 }
 
 
@@ -53,93 +45,6 @@ void drawPaddle(int position, int oldpos){
   // Draw the paddle 
   tft.fillRect(vert, oldpos, PADDLE_HEIGHT, PADDLE_WIDTH, ST7735_BLACK);
   tft.fillRect(vert, position, PADDLE_HEIGHT, PADDLE_WIDTH, ST7735_WHITE);
-
-}
-
-void drawBall(Point p, Point old){
-
-  tft.fillCircle(old.y, old.x, BALL_RADIUS, ST7735_BLACK);
-  tft.fillCircle(p.y, p.x, BALL_RADIUS, ST7735_WHITE);
-}
-
-void checkBallPos(char detected){
-  /* 
-    This function does boundary checking on the ball, also determines where
-    it hits the paddle, and changes the behavior of the ball depending.
-  */
-  if(ball.x >= SCREEN_WIDTH - 3){
-    ball.x = SCREEN_WIDTH - 3;
-    xdir = -1;
-    playTone(500, 50);
-    return;
-  }
-
-  if(ball.x <= 3){
-    ball.x = 3;
-    xdir = 1;
-    playTone(500, 50);
-    return;
-  }
-
-  if(ball.y >= SCREEN_HEIGHT - 3){
-    ball.y = SCREEN_HEIGHT - 3;
-    ydir = -1;
-    playTone(500, 50);
-    return;
-  }
-
-  if(ball.y < 19 && (ball.x <= paddlepos+(PADDLE_WIDTH/2)+3 && ball.x >= paddlepos+(PADDLE_WIDTH/2)-3)){
-    ball.y = 19;
-    ydir = 1;
-    xdir = 0;
-    playTone(500,50);
-    return;
-  }
-
-  if(ball.y < 19 && ( ball.x <= paddlepos+PADDLE_WIDTH)){
-    ball.y = 19;
-    ydir = 1;
-    xdir = 1;
-    Serial.println(xdir);
-    playTone(500, 50);
-    return;
-  }
-
-  if(ball.y < 19 && (ball.x >= paddlepos )){
-    ball.y = 19;
-    ydir = 1;
-    xdir = -1;
-    Serial.println(xdir);
-    playTone(500, 50);
-    return;
-  }
-  if(ball.y < 10 && (ball.x < paddlepos || ball.x > paddlepos+PADDLE_WIDTH)) {
-    playTone(500,500);
-    ball.y = SCREEN_HEIGHT/2;
-    ball.x = paddlepos;
-    ydir = 1;
-    xdir = 1;
-    decreaseLives();
-  }
-  
-  if(detected == 'c')
-  {
-    xdir = -xdir;
-    ydir = -ydir;
-    playTone(200,50);
-  }
-  else
-  {
-    if(detected == 'x'){
-        xdir = -xdir;
-        playTone(200,50);
-    }
-        
-    else if(detected == 'y'){
-        ydir = -ydir;
-        playTone(200,50);
-    }
-  }
 
 }
 
@@ -171,7 +76,7 @@ void setup(){
   X_CENTRE = analogRead(HOR);
   pinMode(SEL, INPUT);
   digitalWrite(SEL, HIGH);
-  pinMode(speakerPin, OUTPUT);
+  pinMode(SPEAKER, OUTPUT);
   // TODO: Check if joystick is depressed here at startup to use accelerometer for control instead
   // Initialize screen
   tft.initR(INITR_REDTAB);
@@ -179,21 +84,13 @@ void setup(){
   int position = (SCREEN_WIDTH/2) - (PADDLE_WIDTH/2);
   int oldpos;
 
-  ball.x = SCREEN_WIDTH/2;
-  ball.y = SCREEN_HEIGHT/2;
-  oldball.x = 0;
-  oldball.y = 0;
-
-  xdir = 1;
-  ydir = 1;
+  initializeBall();
 
   bool updateFlag = false;
   drawPaddle(position, 0);
   drawBricks(NULL);
-  drawBall(ball, oldball);
+  drawBall();
   
-
-  int speed = 1;
   displayStats();
 
   // Main program loop
@@ -210,20 +107,16 @@ void setup(){
       updateFlag = false;
     }
 
-    oldball.x = ball.x;
-    oldball.y = ball.y;
     
     // collision detection for bricks done in here
-    checkBallPos(drawBricks(&ball));
+    updateBallPos(paddlepos);
     
     // check how many lives left. If zero, end the game.
     if(getLivesLeft() <= 0)
         endGame();
 
     
-    ball.x += xdir*speed;
-    ball.y += ydir*speed;
-    drawBall(ball, oldball);
+    drawBall();
     
     delay(20);
   }
