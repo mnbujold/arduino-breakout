@@ -9,6 +9,7 @@
 Point ball, oldball;
 float xdir, ydir;
 float speed;
+bool onPaddle;
 
 
 /* FUNCTIONS */
@@ -24,12 +25,14 @@ void drawBall()
 void initializeBall()
 {
     ball.x = SCREEN_WIDTH/2;
-    ball.y = SCREEN_HEIGHT/2;
+    ball.y = PADDLE_LEVEL + PADDLE_HEIGHT + BALL_RADIUS;
     oldball.x = 0;
     oldball.y = 0;
+    
+    onPaddle = true;
 
-    xdir = 1.0;
-    ydir = 1.0;
+    xdir = 0.0;
+    ydir = 0.0;
     
     speed = 1.0;
 }
@@ -48,28 +51,32 @@ void checkBallCollisions(int paddlepos)
     if(detected == 'n')
     {
         // right wall
-        if(ball.x >= SCREEN_WIDTH - BALL_RADIUS){
+        if(ball.x >= SCREEN_WIDTH - BALL_RADIUS)
+        {
             ball.x = SCREEN_WIDTH - BALL_RADIUS;
-            xdir = -1;
+            xdir = -xdir;
             playTone(500, 50);
             return;
         }
         // left wall
-        if(ball.x <= BALL_RADIUS){
+        if(ball.x <= BALL_RADIUS)
+        {
             ball.x = BALL_RADIUS;
-            xdir = 1;
+            xdir = -xdir;
             playTone(500, 50);
             return;
         }
         // ceiling
-        if(ball.y >= SCREEN_HEIGHT - BALL_RADIUS){
+        if(ball.y >= SCREEN_HEIGHT - BALL_RADIUS)
+        {
             ball.y = SCREEN_HEIGHT - BALL_RADIUS;
-            ydir = -1;
+            ydir = -ydir;
             playTone(500, 50);
             return;
         }
 
-        if(ball.y < 19 && (ball.x <= paddlepos+(PADDLE_WIDTH/2)+3 && ball.x >= paddlepos+(PADDLE_WIDTH/2)-3)){
+        if(ball.y < 19 && (ball.x <= paddlepos+(PADDLE_WIDTH/2)+3 && ball.x >= paddlepos+(PADDLE_WIDTH/2)-3))
+        {
             ball.y = 19;
             ydir = 1;
             xdir = 0;
@@ -77,7 +84,8 @@ void checkBallCollisions(int paddlepos)
             return;
         }
 
-        if(ball.y < 19 && ( ball.x <= paddlepos+PADDLE_WIDTH)){
+        if(ball.y < 19 && ( ball.x <= paddlepos+PADDLE_WIDTH))
+        {
             ball.y = 19;
             ydir = 1;
             xdir = 1;
@@ -86,7 +94,8 @@ void checkBallCollisions(int paddlepos)
             return;
         }
 
-        if(ball.y < 19 && (ball.x >= paddlepos )){
+        if(ball.y < 19 && (ball.x >= paddlepos ))
+        {
             ball.y = 19;
             ydir = 1;
             xdir = -1;
@@ -94,12 +103,10 @@ void checkBallCollisions(int paddlepos)
             playTone(500, 50);
             return;
         }
-        if(ball.y < 10 && (ball.x < paddlepos || ball.x > paddlepos+PADDLE_WIDTH)) {
+        if(ball.y < 10 && (ball.x < paddlepos || ball.x > paddlepos+PADDLE_WIDTH))
+        {
             playTone(500,500);
-            ball.y = SCREEN_HEIGHT/2;
-            ball.x = paddlepos;
-            ydir = 1;
-            xdir = 1;
+            initializeBall();
             decreaseLives();
         }
     }
@@ -136,13 +143,36 @@ void checkBallCollisions(int paddlepos)
 
 // sets old coordinates, checks for collisions, then sets new
 // coordinates based on collision data
-void updateBallPos(int paddlepos)
+void updateBallPos(int paddlePos)
 {
-    oldball.x = ball.x;
-    oldball.y = ball.y;
-    
-    checkBallCollisions(paddlepos);
-    
-    ball.x += xdir*speed;
-    ball.y += ydir*speed;
+    if(onPaddle)
+    {
+        oldball.x = ball.x;
+        oldball.y = ball.y;
+        
+        ball.x = paddlePos + (PADDLE_WIDTH / 2);
+    }
+    else
+    {
+        oldball.x = ball.x;
+        oldball.y = ball.y;
+        
+        checkBallCollisions(paddlePos);
+        
+        ball.x += xdir*speed;
+        ball.y += ydir*speed;
+    }
+}
+
+// checks if ball is still on paddle
+bool ballOnPaddle()
+{
+    return onPaddle;
+}
+
+// sets ball in motion, launching it from paddle
+void launchBall()
+{
+    onPaddle = false;
+    ydir = 1.0;
 }

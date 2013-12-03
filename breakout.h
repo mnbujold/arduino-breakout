@@ -11,10 +11,14 @@ extern Adafruit_ST7735 tft;
 #define TFT_CS 6  // CS line for TFT display
 #define TFT_DC 7  // Data/command line for TFT
 #define TFT_RST 8 // Reset line for TFT
-// joystick pins
+
+// joystick pins and variables
 #define VERT 1
 #define HOR 0
 #define SEL 9
+#define INCREMENT 5
+#define OFFSET 30
+
 // speaker pin
 #define SPEAKER 11
 // height and width of screen
@@ -24,6 +28,8 @@ extern Adafruit_ST7735 tft;
 // paddle dimensions
 #define PADDLE_WIDTH 25
 #define PADDLE_HEIGHT 5
+#define PADDLE_LEVEL 10
+
 
 /* POINT STRUCT */
 typedef struct Point

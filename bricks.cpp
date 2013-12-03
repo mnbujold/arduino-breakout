@@ -88,7 +88,7 @@ char detectCollision(Point* p)
                     }
                     
                     // top or bottom hit detection:
-                    else if((p->y + BALL_RADIUS == brickLocations[i][j].y) ||
+                    if((p->y + BALL_RADIUS == brickLocations[i][j].y) ||
                             (p->y - BALL_RADIUS == brickLocations[i][j].y + BRICK_HEIGHT))
                     {
                         if((p->x + BALL_RADIUS >= brickLocations[i][j].x) &&
@@ -109,7 +109,7 @@ char detectCollision(Point* p)
                     }
                     
                     // left or right hit detection:
-                    else if((p->x + BALL_RADIUS == brickLocations[i][j].x) ||
+                    if((p->x + BALL_RADIUS == brickLocations[i][j].x) ||
                             (p->x - BALL_RADIUS == brickLocations[i][j].x + BRICK_WIDTH))
                     {
                         if((p->y + BALL_RADIUS >= brickLocations[i][j].y) &&

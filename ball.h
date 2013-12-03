@@ -9,8 +9,9 @@
 /* SHARED FUNCTIONS */
 void drawBall();
 void initializeBall();
-void updateBallPos(int paddlepos);
-
+void updateBallPos(int paddlePos);
+bool ballOnPaddle();
+void launchBall();
 
 #endif
 

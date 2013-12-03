@@ -12,16 +12,20 @@
 // tft display
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
 
-
-// Joystick Defs
-const int INCREMENT = 5;
-const int OFFSET = 30;
+// joystick centres
 int X_CENTRE;
+int Y_CENTRE;
+
+// paddle position on-screen
+int paddlePos;
+int oldPaddlePos;
+
+// determines if paddle moved
+bool updateFlag = false;
 
 
-// Ball-Specific Variables
-int paddlepos;
-
+/* FUNCTIONS */
+// used to play tones from the speaker
 void playTone(int period, int duration)
 {
     long elapsedTime = 0;
@@ -37,90 +41,100 @@ void playTone(int period, int duration)
     }
 }
 
-
-void drawPaddle(int position, int oldpos){
-  /* Draws the paddle at the bottom of the screen */
-  int vert = 10;
- 
-  // Draw the paddle 
-  tft.fillRect(vert, oldpos, PADDLE_HEIGHT, PADDLE_WIDTH, ST7735_BLACK);
-  tft.fillRect(vert, position, PADDLE_HEIGHT, PADDLE_WIDTH, ST7735_WHITE);
-
+// Draws the paddle at the bottom of the screen
+void drawPaddle()
+{ 
+  tft.fillRect(PADDLE_LEVEL, oldPaddlePos, PADDLE_HEIGHT, PADDLE_WIDTH, ST7735_BLACK);
+  tft.fillRect(PADDLE_LEVEL, paddlePos, PADDLE_HEIGHT, PADDLE_WIDTH, ST7735_WHITE);
 }
 
-int readJoystick(int position){
-  int joystick_x = analogRead(HOR);
+// reads in joystick movement, and adjusts paddle position
+void readJoystick()
+{
+    int joystick_x = analogRead(HOR);
 
-  if(joystick_x > X_CENTRE + OFFSET){
-    /* Move to the RIGHT by INCREMENT */
-    position += INCREMENT;
-    if(position+PADDLE_WIDTH >= SCREEN_WIDTH)
-      position = SCREEN_WIDTH - PADDLE_WIDTH;
-  }
-
-  else if(joystick_x < X_CENTRE - OFFSET){
-    /* Move to the LEFT by INCREMENT */
-    position -= INCREMENT;
-    if(position <= 0)
-      position = 0;
-  }
-
-  return(position);
+    if(joystick_x > X_CENTRE + OFFSET)
+    {
+        /* Move to the RIGHT by INCREMENT */
+        paddlePos += INCREMENT;
+        
+        if(paddlePos + PADDLE_WIDTH >= SCREEN_WIDTH)
+          paddlePos = SCREEN_WIDTH - PADDLE_WIDTH;
+    }
+    else if(joystick_x < X_CENTRE - OFFSET)
+    {
+        /* Move to the LEFT by INCREMENT */
+        paddlePos -= INCREMENT;
+        
+        if(paddlePos <= 0)
+            paddlePos = 0;
+    }
 }
 
 void setup(){
-  // Start serial communication for debugging
-  Serial.begin(9600);
-  randomSeed(analogRead(4));
-  // Calibrate 'centre' position of joystick
-  X_CENTRE = analogRead(HOR);
-  pinMode(SEL, INPUT);
-  digitalWrite(SEL, HIGH);
-  pinMode(SPEAKER, OUTPUT);
-  // TODO: Check if joystick is depressed here at startup to use accelerometer for control instead
-  // Initialize screen
-  tft.initR(INITR_REDTAB);
-  tft.fillScreen(ST7735_BLACK);
-  int position = (SCREEN_WIDTH/2) - (PADDLE_WIDTH/2);
-  int oldpos;
+    // Start serial communication for debugging
+    Serial.begin(9600);
 
-  initializeBall();
+    // Calibrate 'centre' position of joystick, initialize joystick click
+    X_CENTRE = analogRead(HOR);
+    Y_CENTRE = analogRead(VERT);
+    pinMode(SEL, INPUT);
+    digitalWrite(SEL, HIGH);
 
-  bool updateFlag = false;
-  drawPaddle(position, 0);
-  drawBricks(NULL);
-  drawBall();
-  
-  displayStats();
+    // initialize speaker
+    pinMode(SPEAKER, OUTPUT);
+    // TODO: Check if joystick is depressed here at startup to use accelerometer for control instead
 
-  // Main program loop
-  while(1){
+    // Initialize screen
+    tft.initR(INITR_REDTAB);
+    tft.fillScreen(ST7735_BLACK);
     
-    paddlepos = position;
+    // initialize paddle position
+    paddlePos = (SCREEN_WIDTH/2) - (PADDLE_WIDTH/2);
+    oldPaddlePos = 0;
 
-    oldpos = position;
-    position = readJoystick(position);
-    if(position != oldpos)
-      updateFlag = !updateFlag;
-    if(updateFlag){
-      drawPaddle(position, oldpos);
-      updateFlag = false;
+    // initial ball position on paddle
+    initializeBall();
+    
+    // draw initial objects to screen
+    drawPaddle();
+    drawBricks(NULL);
+    drawBall();
+    displayStats();
+}
+
+void loop()
+{   
+    //Read select pin, to see if joystick has been clicked
+    if(digitalRead(SEL) == LOW && ballOnPaddle())
+    {
+        launchBall();
+        while(digitalRead(SEL) == LOW) {}
     }
 
+    // update paddle position
+    oldPaddlePos = paddlePos;
+    readJoystick();
     
-    // collision detection for bricks done in here
-    updateBallPos(paddlepos);
+    if(paddlePos != oldPaddlePos)
+        updateFlag = !updateFlag;
+      
+    if(updateFlag)
+    {
+        drawPaddle();
+        updateFlag = false;
+    }
+
+
+    // now update balls position
+    updateBallPos(paddlePos);
     
     // check how many lives left. If zero, end the game.
     if(getLivesLeft() <= 0)
         endGame();
-
     
+    // draw the ball
     drawBall();
     
     delay(20);
-  }
-  
 }
-
-void loop(){}
