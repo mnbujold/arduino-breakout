@@ -1,12 +1,27 @@
-#include <Arduino.h>
-#include <Adafruit_GFX.h>
+/*
+    Scott Ruptash
+    Mike Bujold
+    Section A2
+    Michael Bowling, Walter Bischof
+*/
+/*****************************************************
+    BRICKS.CPP:
+        Code in this file is responsible for
+        everything related to the bricks. Detects
+        whether or not the ball has hit a brick,
+        and updates the screen, as well as the bricks
+        and what has been hit or not.
+*****************************************************/
+
+/* HEADER INCLUDES */
 #include <Adafruit_ST7735.h>
-#include <SPI.h>
 
 #include "breakout.h"
 #include "gameStats.h"
 #include "bricks.h"
 #include "ball.h"
+#include "paddle.h"
+
 
 /* GLOBAL VARIABLES */
 // Brick array for visibility
@@ -50,6 +65,9 @@ void initializeBricks()
 // used to detect a collision between ball and brick
 char detectCollision(Point* p)
 {
+    // count how many bricks hit
+    int hitCounter = 0;
+    
     char detected = 'n';
     
     if(p->y + BALL_RADIUS >= bricksBottom)
@@ -72,11 +90,15 @@ char detectCollision(Point* p)
                             tft.fillRect(brickLocations[i][j].y, brickLocations[i][j].x,
                                     BRICK_HEIGHT, BRICK_WIDTH, ST7735_BLACK);
                             
-                            //add to score
+                            // add to score
                             increaseScore(rowScores[i]);
                             
                             // balls y direction changes
                             detected = 'y';
+                            
+                            // red row broken through, cut paddle in half
+                            if(i == 0)
+                                shrinkPaddle();
                         }
                     }
                     
@@ -92,7 +114,7 @@ char detectCollision(Point* p)
                             tft.fillRect(brickLocations[i][j].y, brickLocations[i][j].x,
                                     BRICK_HEIGHT, BRICK_WIDTH, ST7735_BLACK);
                                 
-                            //add to score
+                            // add to score
                             increaseScore(rowScores[i]);
                             
                             // if a top or bottom hit, then treated as corner hit
@@ -105,6 +127,10 @@ char detectCollision(Point* p)
                                 // balls x direction changes
                                 detected = 'x'; 
                             }
+                            
+                            // red row broken through, cut paddle in half
+                            if(i == 0)
+                                shrinkPaddle();
                         }
                     }
                     
@@ -122,13 +148,24 @@ char detectCollision(Point* p)
                         // add to score
                         increaseScore(rowScores[i]);
                         
-                        // treat as a left/right
+                        // treat as a left/right hit
                         detected = 'x';
+                        
+                        // red row broken through, cut paddle in half
+                            if(i == 0)
+                                shrinkPaddle();
                     }
+                }
+                else
+                {
+                    hitCounter++;
                 }
             }
         }
     }
+    
+    if(hitCounter == BRICK_TOTAL)
+        endGame();
     
     // return 'n' if no collision detected
     return detected;

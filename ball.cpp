@@ -1,15 +1,35 @@
+/*
+    Scott Ruptash
+    Mike Bujold
+    Section A2
+    Michael Bowling, Walter Bischof
+*/
+/*****************************************************
+    BALL.CPP:
+        Code in this file is responsible for
+        everything related to the ball. Changes
+        the balls direction based on collision input,
+        and draws ball to screen.
+*****************************************************/
+
+/* HEADER INCLUDES */
 #include <Adafruit_ST7735.h>
 
 #include "breakout.h"
 #include "bricks.h"
 #include "ball.h"
 #include "gameStats.h"
+#include "paddle.h"
+
 
 /* GLOBAL VARIABLES */
 Point ball, oldball;
 float xdir, ydir;
 float speed;
 bool onPaddle;
+// keeps track of paddle hit count
+int paddleHits;
+
 
 
 /* FUNCTIONS */
@@ -22,8 +42,11 @@ void drawBall()
 
 
 // initializes ball to start on paddle
-void initializeBall(int paddlePos)
+void initializeBall(char difficulty)
 {
+    // first get paddle position
+    int paddlePos = getPaddlePosition();
+    
     ball.x = paddlePos + (PADDLE_WIDTH / 2);
     ball.y = PADDLE_LEVEL + PADDLE_HEIGHT + BALL_RADIUS;
     oldball.x = 0;
@@ -34,7 +57,17 @@ void initializeBall(int paddlePos)
     xdir = 0.0;
     ydir = 0.0;
     
-    speed = 1.0;
+    // set ball speed based on difficulty
+    if(difficulty == 'e')
+        speed = 1.0;
+        
+    else if(difficulty == 'm')
+        speed = 1.0;
+        
+    else if(difficulty == 'h')
+        speed = 2.0;
+        
+    paddleHits = 0;
 }
 
 // This function does boundary checking on the ball, also determines where
@@ -74,6 +107,11 @@ void checkBallCollisions(int paddlePos)
         if(ball.y <= 19 && (ball.x <= paddlePos + (PADDLE_WIDTH / 2) + (BALL_RADIUS + 1) &&
                             ball.x >= paddlePos + (PADDLE_WIDTH / 2) - (BALL_RADIUS + 1)))
         {
+            paddleHits++;
+            // increase ball speed slightly with every 6 paddle hits
+            if((paddleHits % 18 == 0) && (paddleHits <= 36))
+                speed += 1.0;
+            
             ball.y = 20;
             ydir = 1.0;
             playTone(500,50);
@@ -83,6 +121,11 @@ void checkBallCollisions(int paddlePos)
         else if(ball.y <= 19 && ((ball.x <= paddlePos + PADDLE_WIDTH) &&
                                  (ball.x > paddlePos + (PADDLE_WIDTH / 2) + (BALL_RADIUS + 1))))
         {
+            paddleHits++;
+            // increase ball speed slightly with every 6 paddle hits
+            if((paddleHits % 18 == 0) && (paddleHits <= 36))
+                speed += 1.0;
+            
             ball.y = 20;
             ydir = 1.0;
             xdir += 1.0;
@@ -93,6 +136,11 @@ void checkBallCollisions(int paddlePos)
         else if(ball.y <= 19 && ((ball.x >= paddlePos) &&
                                  (ball.x < paddlePos + (PADDLE_WIDTH / 2) - (BALL_RADIUS + 1))))
         {
+            paddleHits++;
+            // increase ball speed slightly with every 6 paddle hits
+            if((paddleHits % 18 == 0) && (paddleHits <= 36))
+                speed += 1.0;
+            
             ball.y = 20;
             ydir = 1.0;
             xdir -= 1.0;
@@ -105,7 +153,7 @@ void checkBallCollisions(int paddlePos)
             playTone(500,500);
             tft.fillCircle(ball.y, ball.x, BALL_RADIUS, ST7735_BLACK);
             drawPaddle();
-            initializeBall(paddlePos);
+            initializeBall(getDifficulty());
             decreaseLives();
             displayStats();
             delay(20);
@@ -144,8 +192,11 @@ void checkBallCollisions(int paddlePos)
 
 // sets old coordinates, checks for collisions, then sets new
 // coordinates based on collision data
-void updateBallPos(int paddlePos)
+void updateBallPos()
 {
+    // first get paddle position
+    int paddlePos = getPaddlePosition();
+    
     if(onPaddle)
     {
         oldball.x = ball.x;
@@ -163,6 +214,8 @@ void updateBallPos(int paddlePos)
         ball.x += xdir*speed;
         ball.y += ydir*speed;
     }
+    
+    drawBall();
 }
 
 // checks if ball is still on paddle

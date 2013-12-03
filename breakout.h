@@ -1,3 +1,13 @@
+/*
+    Scott Ruptash
+    Mike Bujold
+    Section A2
+    Michael Bowling, Walter Bischof
+*/
+/**********************************
+    HEADER FILE FOR BREAKOUT.CPP
+***********************************/
+
 #ifndef BREAKOUT_H
 #define BREAKOUT_H
 
@@ -16,22 +26,17 @@ extern Adafruit_ST7735 tft;
 #define VERT 1
 #define HOR 0
 #define SEL 9
-#define OFFSET 30
+#define OFFSET 60
 
 // pause button pin
 #define PAUSE 10
 
 // speaker pin
 #define SPEAKER 11
+
 // height and width of screen
 #define SCREEN_HEIGHT tft.width()
 #define SCREEN_WIDTH tft.height()
-
-// paddle dimensions and variables
-#define PADDLE_WIDTH 35
-#define PADDLE_HEIGHT 5
-#define PADDLE_LEVEL 10
-#define INCREMENT 3
 
 
 /* POINT STRUCT */
@@ -41,8 +46,10 @@ typedef struct Point
     int y;
 } Point;
 
+
 /* SHARED FUNCTIONS */
 void playTone(int period, int duration);
-void drawPaddle();
+void readJoystick(char purpose);
+char getDifficulty();
 
 #endif

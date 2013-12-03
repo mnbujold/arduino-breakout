@@ -7,7 +7,7 @@
 
 # This is needed only if you have a main .ino file from a use of the IDE.
 # Normally you will only have .cpp files.
-TARGET = 
+TARGET =
 
 # Two common board types, mega2560 and uno.
 # Either set your board type here or supply it on the make command as in
@@ -18,7 +18,7 @@ BOARD_TAG = mega2560
 # here.  If you don't have any, leave it undefined.
 # For example:
 	ARDUINO_LIBS = SPI Adafruit_GFX Adafruit_ST7735 \
-	   Adafruit_SD Adafruit_SD/utility SD/utility UAUtils
+	   Adafruit_SD/utility SD/utility UAUtils
 
 # if there is a ARDUINO_UA_ROOT environment variable, it defines the
 # root of the arduino_ua install.  If not, we assume it is $(HOME)

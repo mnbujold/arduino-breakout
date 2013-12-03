@@ -1,7 +1,16 @@
+/*
+    Scott Ruptash
+    Mike Bujold
+    Section A2
+    Michael Bowling, Walter Bischof
+*/
+/**********************************
+    HEADER FILE FOR BRICKS.CPP
+***********************************/
+
 #ifndef BRICKS_H
 #define BRICKS_H
 
-#include <Adafruit_ST7735.h>
 #include "breakout.h"
 
 /* DEFINITIONS */

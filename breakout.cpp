@@ -1,3 +1,18 @@
+/*
+    Scott Ruptash
+    Mike Bujold
+    Section A2
+    Michael Bowling, Walter Bischof
+*/
+/*****************************************************
+    BREAKOUT.CPP:
+        Code in this file is where the main loop
+        resides. Includes functions for the hardware
+        like joystick input, speaker output, and
+        button output.
+*****************************************************/
+
+/* HEADER INCLUDES */
 #include <Arduino.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_ST7735.h>
@@ -7,22 +22,23 @@
 #include "gameStats.h"
 #include "bricks.h"
 #include "ball.h"
+#include "paddle.h"
+
 
 /* GLOBAL VARIABLES */
 // tft display
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
-
 // joystick centres
 int X_CENTRE;
 int Y_CENTRE;
-
-// paddle position on-screen
-int paddlePos;
-int oldPaddlePos;
-
-// determines if paddle moved
-bool updateFlag = false;
-bool paused = false;
+// pause either on or off
+bool paused;
+// game in menu mode or game mode
+bool menuMode;
+// determines if menu selection was made recently. Also used for initial game draw
+bool updateSel;
+// determines game difficulty
+char difficulty;
 
 
 /* FUNCTIONS */
@@ -42,38 +58,76 @@ void playTone(int period, int duration)
     }
 }
 
-// Draws the paddle at the bottom of the screen
-void drawPaddle()
-{ 
-  tft.fillRect(PADDLE_LEVEL, oldPaddlePos, PADDLE_HEIGHT, PADDLE_WIDTH, ST7735_BLACK);
-  tft.fillRect(PADDLE_LEVEL, paddlePos, PADDLE_HEIGHT, PADDLE_WIDTH, ST7735_WHITE);
-}
-
 // reads in joystick movement, and adjusts paddle position
-void readJoystick()
+// alternatively, adjusts selected option in menu
+// parameter used to differentiate the functions purpose
+void readJoystick(char purpose)
 {
     int joystick_x = analogRead(HOR);
 
     if(joystick_x > X_CENTRE + OFFSET)
     {
-        /* Move to the RIGHT by INCREMENT */
-        paddlePos += INCREMENT;
+        // purpose is for moving paddle
+        if(purpose == 'p')
+            /* Move to the RIGHT */
+            adjustPaddle('r');
         
-        if(paddlePos + PADDLE_WIDTH >= SCREEN_WIDTH)
-          paddlePos = SCREEN_WIDTH - PADDLE_WIDTH;
+        // purpose is for setting difficulty
+        else if(purpose == 'm')
+        {
+            if(difficulty == 'e')
+                difficulty = 'm';
+                
+            else if(difficulty == 'm')
+                difficulty = 'h';
+            
+            else if(difficulty == 'h')
+                difficulty = 'e';
+            
+            // wait till joystick back to center
+            while(analogRead(HOR) != X_CENTRE) {}
+            
+            updateSel = true;
+            playTone(100, 50);
+        }
     }
     else if(joystick_x < X_CENTRE - OFFSET)
     {
-        /* Move to the LEFT by INCREMENT */
-        paddlePos -= INCREMENT;
+        // purpose is for moving paddle
+        if(purpose == 'p')
+            /* Move to the LEFT */
+            adjustPaddle('l');
         
-        if(paddlePos <= 0)
-            paddlePos = 0;
+        // purpose is for setting difficulty
+        else if(purpose == 'm')
+        {
+            if(difficulty == 'e')
+                difficulty = 'h';
+                
+            else if(difficulty == 'm')
+                difficulty = 'e';
+            
+            else if(difficulty == 'h')
+                difficulty = 'm';
+                
+            // wait till joystick back to center
+            while(analogRead(HOR) != X_CENTRE) {}
+            
+            updateSel = true;
+            playTone(100, 50);
+        }
     }
 }
 
+// returns difficulty setting
+char getDifficulty()
+{
+    return difficulty;
+}
+
 /* SETUP FUNCTION */
-void setup(){
+void setup()
+{
     // Start serial communication for debugging
     Serial.begin(9600);
 
@@ -88,48 +142,132 @@ void setup(){
 
     // initialize speaker
     pinMode(SPEAKER, OUTPUT);
-    // TODO: Check if joystick is depressed here at startup to use accelerometer for control instead
 
     // Initialize screen
     tft.initR(INITR_REDTAB);
-    tft.fillScreen(ST7735_BLACK);
     
-    // initialize paddle position
-    paddlePos = (SCREEN_WIDTH/2) - (PADDLE_WIDTH/2);
-    oldPaddlePos = 0;
-
-    // initial ball position on paddle
-    initializeBall(paddlePos);
-    
-    // draw initial objects to screen
-    drawPaddle();
-    drawBricks(NULL);
-    drawBall();
-    displayStats();
+    // initialize screen for menu mode.
+    menuMode = true;
+    updateSel = true;
+    paused = false;
+    difficulty = 'e';
 }
+
 
 /* LOOP FUNCTION */
 void loop()
 {
     // read pause pin, unpause game if button is clicked
-    if(digitalRead(PAUSE) == LOW && paused)
+    if(!menuMode)
     {
-        paused = false;
-        while(digitalRead(PAUSE) == LOW) {}
-        pauseGame(paused);
+        if(digitalRead(PAUSE) == LOW && paused)
+        {
+            paused = false;
+            while(digitalRead(PAUSE) == LOW) {}
+            pauseGame(paused);
+        }
     }
-    
+    // print menu instead
+    else
+    {
+        tft.fillScreen(ST7735_BLACK);
+        
+        tft.setRotation(1);
+        tft.setTextSize(2);
+        
+        tft.setCursor(29, 30);
+        tft.setTextColor(ST7735_WHITE);
+        tft.print("B");
+        tft.setTextColor(ST7735_RED);
+        tft.print("R");
+        tft.setTextColor(ST7735_MAGENTA);
+        tft.print("E");
+        tft.setTextColor(ST7735_YELLOW);
+        tft.print("A");
+        tft.setTextColor(ST7735_GREEN);
+        tft.print("K");
+        tft.setTextColor(ST7735_BLUE);
+        tft.print("O");
+        tft.setTextColor(ST7735_WHITE);
+        tft.print("U");
+        tft.setTextColor(ST7735_RED);
+        tft.print("T");
+        tft.setTextColor(ST7735_MAGENTA);
+        tft.print("!");
+        
+        tft.setTextColor(ST7735_WHITE);
+        tft.setTextSize(1);
+        tft.setCursor(28, 75);
+        tft.print("Select Difficulty:");
+    }
     
     /* MENU LOOP */
-    while(false)
+    while(menuMode)
     {
-    
+        // use pause button for selecting difficulty
+        if(digitalRead(PAUSE) == LOW && menuMode)
+        {
+            menuMode = false;
+            while(digitalRead(PAUSE) == LOW) {}
+        }
+        
+        // print selection to screen
+        if(updateSel)
+        {
+            tft.setTextSize(2);
+            tft.fillRect(0, 90, SCREEN_HEIGHT, 20, ST7735_BLACK);
+            
+            if(difficulty == 'e')
+            {
+                tft.setTextColor(ST7735_GREEN);
+                tft.setCursor(45, 90);
+                tft.print("NORMAL");
+            }
+            else if(difficulty == 'm')
+            {
+                tft.setTextColor(ST7735_YELLOW);
+                tft.setCursor(33, 90);
+                tft.print("HARDCORE");
+            }
+            else if(difficulty == 'h')
+            {
+                tft.setTextColor(ST7735_RED);
+                tft.setCursor(35, 90);
+                tft.print("EXTREME!");
+            }
+            
+            updateSel = false;
+        }
+        
+        // read joystick, and print out selected option ('m' for menu)
+        readJoystick('m');
     }
-    
     
     /* GAME LOOP */
     while(!paused)
     {
+        if(!updateSel)
+        {
+            // blacken screen and rotate back to normal
+            tft.fillScreen(ST7735_BLACK);
+            tft.setRotation(0);
+            
+            // initialize paddle position and difficulty
+            initializePaddle(difficulty);
+            // initial ball position and difficulty
+            initializeBall(difficulty);
+            // initialize score deduction from difficulty selection
+            initializeScore(difficulty);
+            
+            // draw initial objects to screen
+            drawPaddle();
+            drawBricks(NULL);
+            drawBall();
+            displayStats();
+            
+            updateSel = true;
+        }
+        
         //Read select pin, to see if joystick has been clicked
         if(digitalRead(SEL) == LOW && ballOnPaddle())
         {
@@ -147,28 +285,10 @@ void loop()
         }
 
         // update paddle position
-        oldPaddlePos = paddlePos;
-        readJoystick();
-        
-        if(paddlePos != oldPaddlePos)
-            updateFlag = !updateFlag;
-          
-        if(updateFlag)
-        {
-            drawPaddle();
-            updateFlag = false;
-        }
+        updatePaddlePos();
 
-
-        // now update balls position
-        updateBallPos(paddlePos);
-        
-        // check how many lives left. If zero, end the game.
-        if(getLivesLeft() <= 0)
-            endGame();
-        
-        // draw the ball
-        drawBall();
+        // now update ball position
+        updateBallPos();
         
         delay(15);
     }
