@@ -150,7 +150,7 @@ void checkBallCollisions(int paddlePos)
         // ball hits floor, lives lost, score deducted
         if(ball.y <= 10 && ((ball.x < paddlePos) || (ball.x > paddlePos + PADDLE_WIDTH)))
         {
-            playTone(500,500);
+            playTone(50,500);
             tft.fillCircle(ball.y, ball.x, BALL_RADIUS, ST7735_BLACK);
             drawPaddle();
             initializeBall(getDifficulty());
