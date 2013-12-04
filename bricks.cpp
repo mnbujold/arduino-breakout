@@ -93,8 +93,16 @@ char detectCollision(Point* p)
                             // add to score
                             increaseScore(rowScores[i]);
                             
-                            // balls y direction changes
-                            detected = 'y';
+                            // if a left or right already hit, then treated as corner hit
+                            if(detected == 'x')
+                            {
+                                detected = 'c';
+                            }
+                            else
+                            {
+                                // balls y direction changes
+                                detected = 'y';
+                            }
                             
                             // red row broken through, cut paddle in half
                             if(i == 0)
@@ -117,7 +125,7 @@ char detectCollision(Point* p)
                             // add to score
                             increaseScore(rowScores[i]);
                             
-                            // if a top or bottom hit, then treated as corner hit
+                            // if a top or bottom already hit, then treated as corner hit
                             if(detected == 'y')
                             {    
                                 detected = 'c';
