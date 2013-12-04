@@ -11,11 +11,6 @@ This version was developed and runs on the Arduino Mega 2560. It uses the Adafru
 Known Issues:
 
 Features to be Added:
-- 'Lives' counter (LEDs)
-- Adjustable ball speed (using pot)
-- Sound
-- Scoring
-- Ball 'physics' (eg. spin, speed, angle)
 - High Score Storage (Maybe...)
 
 Special Thanks:  
