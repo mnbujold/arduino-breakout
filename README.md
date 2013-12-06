@@ -6,7 +6,7 @@ Scott Ruptash
 
 This is a version of the arcade classic Breakout! for the Arduino platform. (For an example of gameplay, see: http://www.play.vg/games/10-Breakout.html).
 
-This version was developed and runs on the Arduino Mega 2560. It uses the Adafruit ST7735 LCD module for output and a (10k) analog joystick for input. 
+This version was developed and runs on the Arduino Mega 2560. It uses the Adafruit ST7735 LCD module and speaker for output, and a (5k) analog joystick and a basic pushbutton for input.
 
 To Compile:  
 With the Arduino Mega 2560 board connected, type 'make upload'  
